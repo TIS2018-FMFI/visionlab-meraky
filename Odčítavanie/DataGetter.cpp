@@ -15,17 +15,14 @@ double DataGetter::getData()
 {
 	vysledokString = "";
 
-	cvtColor(input, gray, COLOR_BGR2GRAY);		//turns the image to grayscale
-	blur(gray, gray, Size(3, 3));				//smooths the gray image
 
-	//imshow("?", input);
-	//waitKey(0);
+	/*imshow("?", input);
+	waitKey(0);*/
 
-	threshold(gray, thresh, 58, 100, THRESH_BINARY);		//thresholds the image, cropping away the things we don't need
+	threshold(input, thresh, 58, 100, THRESH_BINARY);		//thresholds the image, cropping away the things we don't need
 
-//	imshow("?", thresh);
-//	waitKey(0);
-
+	/*imshow("?", thresh);
+	waitKey(0);*/
 
 	findContours(thresh, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));		//finds all the contours on the image
 
@@ -49,7 +46,7 @@ double DataGetter::getData()
 	int size = contours.size();
 
 	for (size_t i = 0; i < size; i++) {
-		if ((boundRect[i].height < 10) || (boundRect[i].width < 10)) {
+		if ((boundRect[i].height <= 20) || (boundRect[i].width <= 7)) {
 			for (size_t j = i; j < size - 1; j++) {
 				contours[j] = contours[j + 1];
 				boundRect[j] = boundRect[j + 1];
@@ -108,11 +105,11 @@ double DataGetter::getData()
 			//throws away the inner bounding boxes (e.g sometimes at the digit "0" the program finds the bounding box of the inner part)
 
 
-			else if (((boundRect2[i].x >= boundRect2[i + 1].x) && (boundRect2[i].x - 20 <= boundRect2[i + 1].x)) ||
-				((boundRect2[i].x <= boundRect2[i + 1].x) && (boundRect2[i].x >= boundRect2[i + 1].x - 20)))
+			else if (((boundRect2[i].x >= boundRect2[i + 1].x) && (boundRect2[i].x - 5 <= boundRect2[i + 1].x)) ||
+				((boundRect2[i].x <= boundRect2[i + 1].x) && (boundRect2[i].x >= boundRect2[i + 1].x - 5)))
 			{
 				if (boundRect2[i].x >= boundRect2[i + 1].x) {
-					//boundRect2[i].x = boundRect2[i + 1].x;
+					boundRect2[i].x = boundRect2[i + 1].x;
 					boundRect2[i].height += boundRect2[i + 1].height;
 				}
 				else if (boundRect2[i].x <= boundRect2[i + 1].x) {
@@ -138,17 +135,17 @@ double DataGetter::getData()
 		Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
 		rectangle(input, boundRect2[i].tl(), boundRect2[i].br(), color, 2, 8, 0);				//Draws rectangles around the digits
 	}
-/*
-	imshow("?", input);
-	waitKey(0);
-	*/
+
+	/*imshow("?", input);
+	waitKey(0);*/
+
 	for (size_t i = 0; i < boundRect2.size(); i++) {
 		cv::Rect roi(boundRect2[i].x, boundRect2[i].y, boundRect2[i].width, boundRect2[i].height);		//we analyize each digit separetely
 		ROI = input(roi);
-		/*
-		imshow("??", ROI);
-		waitKey(0);
-		*/
+
+		//	imshow("??", ROI);
+		//	waitKey(0);
+
 		number = analyzeImage(ROI, boundRect2, i);
 		vysledokString += to_string(number);
 		vysledokDouble = stod(vysledokString);
@@ -180,7 +177,7 @@ int DataGetter::analyzeImage(Mat roi, vector<Rect> boundRect2, int p)
 	{ { boundRect2[p].width - dWidth, 0 },{ boundRect2[p].width, boundRect2[p].height / 2 } },	//top-right
 	{ { 0, (boundRect2[p].height / 2) - dCenter },{ boundRect2[p].width, (boundRect2[p].height / 2) + dCenter } },	//center
 	{ { 0, boundRect2[p].height / 2 },{ dWidth, boundRect2[p].height } },	//bottom-left
-	{ { boundRect2[p].width - dWidth - 5, boundRect2[p].height / 2 },{ boundRect2[p].width - 5, boundRect2[p].height } },	//bottom-right
+	{ { boundRect2[p].width - dWidth, boundRect2[p].height / 2 },{ boundRect2[p].width, boundRect2[p].height } },	//bottom-right
 	{ { 0, boundRect2[p].height - dHeight },{ boundRect2[p].width, boundRect2[p].height } }		//bottom
 	};
 
@@ -204,15 +201,15 @@ int DataGetter::analyzeImage(Mat roi, vector<Rect> boundRect2, int p)
 		cv::Mat segROI;
 		cv::Rect Roi(xA, yA, xB - xA, yB - yA);
 		segROI = roi(Roi);
-		cvtColor(segROI, segROI, COLOR_BGR2GRAY);
+	//	cvtColor(segROI, segROI, COLOR_BGR2GRAY);
 
-		//	imshow("?", segROI);
-		//	waitKey(0);
+		/*imshow("?", segROI);
+		waitKey(0);*/
 
-		threshold(segROI, segROI, 58, 100, THRESH_BINARY);
+		threshold(segROI, segROI, 50, 100, THRESH_BINARY);
 
-		//	imshow("?", segROI);
-		//	waitKey(0);
+	//	imshow("?", segROI);
+	//	waitKey(0);
 
 		total = cv::countNonZero(segROI);		//counts the non-zero pixels (so the pixels which are not black)
 

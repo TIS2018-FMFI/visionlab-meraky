@@ -254,6 +254,7 @@ DWORD WINAPI opencv_mainloop(void* pContext)
 			Mat vysl;
 			bitwise_or(frame, frame, vysl, mask);
 			frame = vysl;
+
 		
 
 			frame.convertTo(frame, -1, dlg->cfg.getCam().getKontrast(), dlg->cfg.getCam().getJas());
@@ -292,13 +293,24 @@ DWORD WINAPI opencv_mainloop(void* pContext)
 							(*dlg->cap) >> frame_for_analyse;
 
 							//------- prahovanie a zmena jasu a kontrastu----------	
-							Mat mask;
+							/*Mat mask;
 							inRange(frame_for_analyse, Scalar(dlg->cfg.getBmin(), dlg->cfg.getGmin(), dlg->cfg.getRmin()), Scalar(dlg->cfg.getBmax(), dlg->cfg.getGmax(), dlg->cfg.getRmax()), mask);
 							Mat vysl;
 							bitwise_or(frame_for_analyse, frame_for_analyse, vysl, mask);
+							frame_for_analyse = vysl;*/
+
+
+							Mat mask;
+							Mat gray;
+							Mat vysl;
+							blur(frame_for_analyse, frame_for_analyse, Size(3, 3));
+							cvtColor(frame_for_analyse, gray, CV_BGR2GRAY);
+							inRange(frame_for_analyse, Scalar(dlg->cfg.getBmin(), dlg->cfg.getGmin(), dlg->cfg.getRmin()), Scalar(dlg->cfg.getBmax(), dlg->cfg.getGmax(), dlg->cfg.getRmax()), mask);							
+							bitwise_or(gray, gray, vysl, mask);
 							frame_for_analyse = vysl;
 
 							frame_for_analyse.convertTo(frame_for_analyse, -1, dlg->cfg.getCam().getKontrast(), dlg->cfg.getCam().getJas());
+							
 							//--------------------------------------
 
 
